@@ -26,15 +26,16 @@ let parseIdentity = state => {
 };
 
 let getAccounts = state => {
+    console.log(JSON.stringify(state));
     var params = {
         TableName : _options.accountsTable,
         KeyConditionExpression: "identityId = :i",
         ExpressionAttributeValues: {
-            ":i": context.identity.cognitoIdentityId
+            ":i": {S: state.identityId}
         }
     };
 
-    return _options.dynamodb.query(params)
+    return _options.dynamodb.queryAsync(params)
         .then(data => {
             state.accounts = data.Items.map(account => {
                 return {

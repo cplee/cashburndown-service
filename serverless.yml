@@ -5,6 +5,7 @@ provider:
   region: us-west-2
   stage: dev
   cognitoRole: Cognito_CashflowBurndownAuth_Role
+  plaidEnv: tartan
   iamRoleStatements:
     - Effect: "Allow"
       Action:
@@ -18,7 +19,7 @@ custom:
     SERVERLESS_STAGE: ${self:custom.stage}
     PLAID_CLIENT_ID: ${opt:plaid_client_id}
     PLAID_CLIENT_SECRET: ${opt:plaid_client_secret}
-    PLAID_ENV: ${opt:plaid_env, 'tartan'}
+    PLAID_ENV: ${opt:plaid_env, self:provider.plaidEnv}
     ACCOUNTS_TABLE: "Accounts-${self:custom.stage}"
 
 plugins:
@@ -93,18 +94,3 @@ resources:
                 Effect: "Allow"
                 Action: "lambda:InvokeFunction"
                 Resource: { "Fn::Join" : ["", ["arn:aws:lambda:",{"Ref":"AWS::Region"},":",{"Ref":"AWS::AccountId"},":function:cashburndown-service-","${self:custom.stage}","-*"]]}
-              #-
-                #Effect: "Allow"
-                #Action:
-                #  - "dynamodb:GetItem"
-                #  - "dynamodb:BatchGetItem"
-                #  - "dynamodb:Query"
-                #  - "dynamodb:PutItem"
-                #  - "dynamodb:UpdateItem"
-                #  - "dynamodb:DeleteItem"
-                #  - "dynamodb:BatchWriteItem"
-                #Resource: { "Fn::Join" : ["", ["arn:aws:dynamodb:",{"Ref":"AWS::Region"},":",{"Ref":"AWS::AccountId"},"table/Tokens-","${self:custom.stage}"]]}
-                #Condition:
-                #  "ForAllValues:StringEquals":
-                #    "dynamodb:LeadingKeys":
-                #      - { "Fn::Join" : ["", ["${","cognito-identity.amazonaws.com:sub","}"]]}

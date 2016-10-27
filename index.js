@@ -16,8 +16,8 @@ let dynamodbPromised = Promise.promisifyAll(dynamodb);
 
 // Setup Plaid client
 let plaid = require('plaid');
-bluebird.promisifyAll(plaid);
-let plaidClient = new plaid.Client(proces.env.PLAID_CLIENT_ID, proces.env.PLAID_CLIENT_SECRET, plaid.environments[process.env.PLAID_ENV]);
+Promise.promisifyAll(plaid);
+let plaidClient = new plaid.Client(process.env.PLAID_CLIENT_ID, process.env.PLAID_CLIENT_SECRET, plaid.environments[process.env.PLAID_ENV]);
 
 // Define options
 let options = {
@@ -37,6 +37,19 @@ require("fs").readdirSync(lambdaPath).forEach(function(file) {
         let statePromise = Promise.resolve({event: event, context: context});
         workflow.run(statePromise)
             .then(context.succeed)
-            .catch(context.fail);
+            .catch((err) => {
+                if(err.stack) {
+                    console.error(err.stack);
+                } else {
+                    console.error(err);
+                }
+
+                context.succeed({
+                    statusCode: 500,
+                    headers: {
+                        "Access-Control-Allow-Origin" : "*"
+                    }
+                });
+            });
     };
 });

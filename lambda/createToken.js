@@ -32,7 +32,7 @@ let parseEvent = state => {
     if(!state.event) {
         throw new Error('BadRequest: event is undefined');
     }
-    const body_json = JSON.parse(event.body);
+    const body_json = JSON.parse(state.event.body);
     state.public_token = body_json.public_token;
     state.institution_type = body_json.institution.type;
 
@@ -55,21 +55,29 @@ let getAccounts = state => {
         });
 };
 
+let attributeValue = val => {
+    if(val) {
+        return {S: val};
+    } else {
+        return {NULL: true};
+    }
+}
+
 let storeAccounts = state => {
-    console.log("PUT: "+JSON.stringify(state.accounts));
+    console.log("PLAID ACCOUNTS: "+JSON.stringify(state.accounts));
     let putRequests = state.accounts.map(account => {
         return {
             PutRequest: {
                 Item: {
-                    identityId: { S: state.identityId },
-                    id: { S: account._id },
-                    item: { S: account._item},
-                    user: { S: account._user},
-                    type: { S: account.type },
-                    subtype: { S: account.subtype },
-                    institution_type: { S: account.institution_type },
-                    access_token: { S: state.access_token },
-                    public_token: { S: state.public_token }
+                    identityId: attributeValue(state.identityId),
+                    id: attributeValue(account._id),
+                    item: attributeValue(account._item),
+                    user: attributeValue(account._user),
+                    type: attributeValue(account.type),
+                    subtype: attributeValue(account.subtype),
+                    institution_type: attributeValue(account.institution_type),
+                    access_token: attributeValue(state.access_token),
+                    public_token: attributeValue(state.public_token)
                 }
             }
         }
@@ -77,6 +85,9 @@ let storeAccounts = state => {
 
     let params = { RequestItems: {} };
     params.RequestItems[_options.accountsTable] = putRequests;
+
+    console.log("BATCH WRITE: "+JSON.stringify(params));
+
     return _options.dynamodb.batchWriteItemAsync(params)
         .then((data) => {
             if (Object.keys(data.UnprocessedItems).length > 0) {
