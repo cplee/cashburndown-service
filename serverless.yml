@@ -1,0 +1,110 @@
+service: cashburndown-service
+provider:
+  name: aws
+  runtime: nodejs4.3
+  region: us-west-2
+  stage: dev
+  cognitoRole: Cognito_CashflowBurndownAuth_Role
+  iamRoleStatements:
+    - Effect: "Allow"
+      Action:
+        - "dynamodb:*"
+      Resource:
+        - "arn:aws:dynamodb:${self:provider.region}:*:table/Accounts-${self:custom.stage}"
+custom:
+  stage: ${opt:stage, self:provider.stage}
+  cognitoRole: ${opt:cognito_role, self:provider.cognitoRole}
+  writeEnvVars:
+    SERVERLESS_STAGE: ${self:custom.stage}
+    PLAID_CLIENT_ID: ${opt:plaid_client_id}
+    PLAID_CLIENT_SECRET: ${opt:plaid_client_secret}
+    PLAID_ENV: ${opt:plaid_env, 'tartan'}
+    ACCOUNTS_TABLE: "Accounts-${self:custom.stage}"
+
+plugins:
+   - serverless-plugin-write-env-vars
+
+package:
+    include:
+      - node_modules
+      - src
+
+functions:
+  getAccounts:
+    handler: index.getAccounts
+    events:
+      - http:
+          path: accounts
+          method: get
+          cors: true
+  createToken:
+    handler: index.createToken
+    events:
+      - http:
+          path: tokens
+          method: post
+          cors: true
+
+
+resources:
+  Resources:
+    ApiGatewayMethodAccountsGet:
+      Properties:
+        AuthorizationType: AWS_IAM
+        Integration:
+              Credentials: 'arn:aws:iam::*:user/*' #sets "Invoke with caller credentials
+    ApiGatewayMethodTokensPost:
+      Properties:
+        AuthorizationType: AWS_IAM
+        Integration:
+              Credentials: 'arn:aws:iam::*:user/*' #sets "Invoke with caller credentials
+    AccountsTable:
+      Type: AWS::DynamoDB::Table
+      Properties:
+        TableName: "Accounts-${self:custom.stage}"
+        AttributeDefinitions:
+          - AttributeName: identityId
+            AttributeType: S
+          - AttributeName: id
+            AttributeType: S
+        KeySchema:
+          - AttributeName: identityId
+            KeyType: HASH
+          - AttributeName: id
+            KeyType: RANGE
+        ProvisionedThroughput:
+          ReadCapacityUnits: 1
+          WriteCapacityUnits: 1
+    AccessCashBurndownService:
+      Type: AWS::IAM::ManagedPolicy
+      Properties:
+          Description: "Policy to assign to Cognito 'Authenticated' Role"
+          Path: "/"
+          Roles:
+           - "${self:custom.cognitoRole}"
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              -
+                Effect: "Allow"
+                Action: "execute-api:Invoke"
+                Resource: { "Fn::Join" : ["", ["arn:aws:execute-api:",{"Ref":"AWS::Region"},":",{"Ref":"AWS::AccountId"},":",{"Ref":"ApiGatewayRestApi"},"/*"]]}
+              -
+                Effect: "Allow"
+                Action: "lambda:InvokeFunction"
+                Resource: { "Fn::Join" : ["", ["arn:aws:lambda:",{"Ref":"AWS::Region"},":",{"Ref":"AWS::AccountId"},":function:cashburndown-service-","${self:custom.stage}","-*"]]}
+              #-
+                #Effect: "Allow"
+                #Action:
+                #  - "dynamodb:GetItem"
+                #  - "dynamodb:BatchGetItem"
+                #  - "dynamodb:Query"
+                #  - "dynamodb:PutItem"
+                #  - "dynamodb:UpdateItem"
+                #  - "dynamodb:DeleteItem"
+                #  - "dynamodb:BatchWriteItem"
+                #Resource: { "Fn::Join" : ["", ["arn:aws:dynamodb:",{"Ref":"AWS::Region"},":",{"Ref":"AWS::AccountId"},"table/Tokens-","${self:custom.stage}"]]}
+                #Condition:
+                #  "ForAllValues:StringEquals":
+                #    "dynamodb:LeadingKeys":
+                #      - { "Fn::Join" : ["", ["${","cognito-identity.amazonaws.com:sub","}"]]}

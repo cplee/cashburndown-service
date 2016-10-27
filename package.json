@@ -1,0 +1,13 @@
+{
+  "name": "cashburndown-service",
+  "version": "1.0.0",
+  "description": "",
+  "author": "Casey Lee <cplee@nektos.com> (http://www.cplee.org)",
+  "license": "ISC",
+  "dependencies": {
+    "bluebird": "^3.4.6",
+    "dotenv": "^2.0.0",
+    "plaid": "^1.1.0",
+    "serverless-plugin-write-env-vars": "^1.0.1"
+  }
+}
