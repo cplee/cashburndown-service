@@ -38,6 +38,10 @@ let getAccounts = state => {
     return _options.dynamodb.queryAsync(params)
         .then(data => {
             state.accounts = data.Items;
+            state.accounts.forEach(a => {
+                delete a.access_token;
+                delete a.public_token;
+            });
             return state;
         });
 };
