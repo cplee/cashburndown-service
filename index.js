@@ -11,7 +11,7 @@ let AWS = require('aws-sdk');
 if(!AWS.config.region) {
     AWS.config.region = process.env.AWS_DEFAULT_REGION;
 }
-let dynamodb = new AWS.DynamoDB({apiVersion: '2012-08-10'});
+let dynamodb = new AWS.DynamoDB.DocumentClient();
 let dynamodbPromised = Promise.promisifyAll(dynamodb);
 
 // Setup Plaid client

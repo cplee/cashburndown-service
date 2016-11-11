@@ -48,20 +48,12 @@ let exchangeToken = state => {
 };
 
 let getAccounts = state => {
-    return _options.plaidClient.getAuthUserAsync(state.access_token)
+    return _options.plaidClient.getConnectUserAsync(state.access_token, {login_only: true})
         .then(resp => {
             state.accounts = resp.accounts;
             return state;
         });
 };
-
-let attributeValue = val => {
-    if(val) {
-        return {S: val};
-    } else {
-        return {NULL: true};
-    }
-}
 
 let storeAccounts = state => {
     console.log("PLAID ACCOUNTS: "+JSON.stringify(state.accounts));
@@ -69,15 +61,16 @@ let storeAccounts = state => {
         return {
             PutRequest: {
                 Item: {
-                    identityId: attributeValue(state.identityId),
-                    id: attributeValue(account._id),
-                    item: attributeValue(account._item),
-                    user: attributeValue(account._user),
-                    type: attributeValue(account.type),
-                    subtype: attributeValue(account.subtype),
-                    institution_type: attributeValue(account.institution_type),
-                    access_token: attributeValue(state.access_token),
-                    public_token: attributeValue(state.public_token)
+                    identityId: state.identityId,
+                    id: account._id,
+                    item: account._item,
+                    user: account._user,
+                    type: account.type,
+                    subtype: account.subtype,
+                    institution_type: account.institution_type,
+                    access_token: state.access_token,
+                    public_token: state.public_token,
+                    meta: account.meta
                 }
             }
         }
@@ -88,7 +81,7 @@ let storeAccounts = state => {
 
     console.log("BATCH WRITE: "+JSON.stringify(params));
 
-    return _options.dynamodb.batchWriteItemAsync(params)
+    return _options.dynamodb.batchWriteAsync(params)
         .then((data) => {
             if (Object.keys(data.UnprocessedItems).length > 0) {
                 console.error(`Unprocessed Items: ${data.UnprocessedItems}`);

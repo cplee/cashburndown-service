@@ -16,7 +16,7 @@ Workflow.prototype.run = (statePromise) => {
 module.exports = Workflow;
 
 let parseIdentity = state => {
-    if(!state.context) {
+    if (!state.context) {
         throw new Error('BadRequest: event is undefined');
     }
 
@@ -28,25 +28,16 @@ let parseIdentity = state => {
 let getAccounts = state => {
     console.log(JSON.stringify(state));
     var params = {
-        TableName : _options.accountsTable,
+        TableName: _options.accountsTable,
         KeyConditionExpression: "identityId = :i",
         ExpressionAttributeValues: {
-            ":i": {S: state.identityId}
+            ":i": state.identityId
         }
     };
 
     return _options.dynamodb.queryAsync(params)
         .then(data => {
-            state.accounts = data.Items.map(account => {
-                return {
-                    id: account.id.S,
-                    item: account.item.S,
-                    user: account.user.S,
-                    type: account.type.S,
-                    subtype: account.subtype.S,
-                    institution_type: account.institution_type.S
-                };
-            });
+            state.accounts = data.Items;
             return state;
         });
 };
@@ -55,7 +46,7 @@ let createResponse = state => {
     return {
         statusCode: 200,
         headers: {
-            "Access-Control-Allow-Origin" : "*"
+            "Access-Control-Allow-Origin": "*"
         },
         body: JSON.stringify(state.accounts)
     };
