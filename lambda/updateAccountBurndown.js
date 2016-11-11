@@ -9,7 +9,7 @@ function Workflow(options) {
 Workflow.prototype.run = (statePromise) => {
     return statePromise
         .then(parseIdentity)
-        .then(getAccounts)
+        .then(updateAccount)
         .then(createResponse);
 };
 
@@ -25,33 +25,30 @@ let parseIdentity = state => {
     return state;
 };
 
-let getAccounts = state => {
+let updateAccount = state => {
+    console.log(JSON.stringify(state));
     var params = {
         TableName: _options.accountsTable,
-        KeyConditionExpression: "identityId = :i",
+        Key: {
+            "id": {
+                S: state.event.input.pathParameters.id
+            }
+        },
+        ConditionExpression: "identityId = :i",
         ExpressionAttributeValues: {
             ":i": state.identityId
         }
     };
 
-    return _options.dynamodb.queryAsync(params)
-        .then(data => {
-            state.accounts = data.Items;
-            state.accounts.forEach(a => {
-                delete a.access_token;
-                delete a.public_token;
-            });
-            return state;
-        });
+    return _options.dynamodb.deleteItemAsync(params);
 };
 
 let createResponse = state => {
     return {
-        statusCode: 200,
+        statusCode: 204,
         headers: {
             "Access-Control-Allow-Origin": "*"
-        },
-        body: JSON.stringify(state.accounts)
+        }
     };
 };
 

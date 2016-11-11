@@ -38,6 +38,20 @@ functions:
           path: accounts
           method: get
           cors: true
+  deleteAccount:
+    handler: index.deleteAccount
+    events:
+      - http:
+          path: accounts/{id}
+          method: delete
+          cors: true
+  updateAccountBurndown:
+    handler: index.updateAccountBurndown
+    events:
+      - http:
+          path: accounts/{id}/burndown
+          method: put
+          cors: true
   createToken:
     handler: index.createToken
     events:
@@ -49,6 +63,16 @@ functions:
 
 resources:
   Resources:
+    ApiGatewayMethodAccountsIdVarDelete:
+      Properties:
+        AuthorizationType: AWS_IAM
+        Integration:
+              Credentials: 'arn:aws:iam::*:user/*' #sets "Invoke with caller credentials
+    ApiGatewayMethodAccountsIdVarBurndownPut:
+      Properties:
+        AuthorizationType: AWS_IAM
+        Integration:
+              Credentials: 'arn:aws:iam::*:user/*' #sets "Invoke with caller credentials
     ApiGatewayMethodAccountsGet:
       Properties:
         AuthorizationType: AWS_IAM
