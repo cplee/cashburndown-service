@@ -56,7 +56,6 @@ let getAccounts = state => {
 };
 
 let storeAccounts = state => {
-    console.log("PLAID ACCOUNTS: "+JSON.stringify(state.accounts));
     let putRequests = state.accounts.map(account => {
         return {
             PutRequest: {
@@ -78,8 +77,6 @@ let storeAccounts = state => {
 
     let params = { RequestItems: {} };
     params.RequestItems[_options.accountsTable] = putRequests;
-
-    console.log("BATCH WRITE: "+JSON.stringify(params));
 
     return _options.dynamodb.batchWriteAsync(params)
         .then((data) => {

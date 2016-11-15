@@ -30,17 +30,16 @@ let updateAccount = state => {
     var params = {
         TableName: _options.accountsTable,
         Key: {
-            "id": {
-                S: state.event.input.pathParameters.id
-            }
+            "identityId": state.identityId,
+            "id": state.event.pathParameters.id
         },
-        ConditionExpression: "identityId = :i",
+        UpdateExpression: 'set burndown = :b',
         ExpressionAttributeValues: {
-            ":i": state.identityId
+            ":b": JSON.parse(state.event.body)
         }
     };
 
-    return _options.dynamodb.deleteItemAsync(params);
+    return _options.dynamodb.updateAsync(params);
 };
 
 let createResponse = state => {
