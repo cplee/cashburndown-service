@@ -59,6 +59,13 @@ functions:
           path: tokens
           method: post
           cors: true
+  getBurndown:
+    handler: index.getBurndown
+    events:
+      - http:
+          path: burndowns/{burndownType}
+          method: get
+          cors: true
 
 
 resources:
@@ -79,6 +86,11 @@ resources:
         Integration:
               Credentials: 'arn:aws:iam::*:user/*' #sets "Invoke with caller credentials
     ApiGatewayMethodTokensPost:
+      Properties:
+        AuthorizationType: AWS_IAM
+        Integration:
+              Credentials: 'arn:aws:iam::*:user/*' #sets "Invoke with caller credentials
+    ApiGatewayMethodBurndownsBurndowntypeVarGet:
       Properties:
         AuthorizationType: AWS_IAM
         Integration:

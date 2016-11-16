@@ -1,6 +1,9 @@
 # Idenity Pool
 Setup Cognito identity pool named `Cashflow Burndown` with an Authenticated Role named `Cognito_CashflowBurndownAuth_Role`.  Enable *Google+* authentication provider and provide your *Google Client ID*.
 
+# Unit test
+`npm test`
+
 # Deployment
 Use Serverless to deploy:
 
