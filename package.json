@@ -4,10 +4,19 @@
   "description": "",
   "author": "Casey Lee <cplee@nektos.com> (http://www.cplee.org)",
   "license": "ISC",
+  "scripts": {
+    "test": "node_modules/.bin/mocha"
+  },
   "dependencies": {
     "bluebird": "^3.4.6",
     "dotenv": "^2.0.0",
     "plaid": "^1.1.0",
     "serverless-plugin-write-env-vars": "^1.0.1"
+  },
+  "devDependencies": {
+    "chai": "^3.5.0",
+    "chance": "^1.0.4",
+    "mocha": "^3.1.2",
+    "sinon": "^1.17.6"
   }
 }

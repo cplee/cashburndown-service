@@ -34,7 +34,6 @@ let parseEvent = state => {
     }
     const body_json = JSON.parse(state.event.body);
     state.public_token = body_json.public_token;
-    state.institution_type = body_json.institution.type;
 
     return state;
 };
