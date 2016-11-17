@@ -88,7 +88,7 @@ let loadAccounts = state => {
 
     return _options.dynamodb.queryAsync(params)
         .then(data => {
-            state.accounts = data.Items.filter(account => account.burndown.toUpperCase() === state.burndownType);
+            state.accounts = data.Items.filter(account => account.burndown && account.burndown.toUpperCase() === state.burndownType);
             return state;
         });
 }
