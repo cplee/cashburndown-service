@@ -56,6 +56,11 @@ let setupBurndown = state => {
                 startDate = firstPaydate;
                 endDate = new Date(secondPaydate.getTime());
                 endDate.setDate(endDate.getDate() - 1);
+            } else if( asofdate < firstPaydate) {
+                startDate = new Date(secondPaydate.getTime());
+                startDate.setMonth(startDate.getMonth() - 1);
+                endDate = new Date(firstPaydate.getTime());
+                endDate.setDate(endDate.getDate() - 1);
             } else {
                 startDate = secondPaydate;
                 endDate = new Date(firstPaydate.getTime());
@@ -71,8 +76,6 @@ let setupBurndown = state => {
         startDate: startDate,
         endDate: endDate
     };
-
-    console.log(`asofdate=${asofdate} burndown=${JSON.stringify(state)}`);
 
     return state;
 };
@@ -129,6 +132,8 @@ let loadForecast = state => {
 };
 
 let createResponse = state => {
+    state.burndown.startDate = state.burndown.startDate.toISOString().substring(0, 10);
+    state.burndown.endDate = state.burndown.endDate.toISOString().substring(0, 10);
     return {
         statusCode: 200,
         headers: {
